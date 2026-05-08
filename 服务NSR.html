@@ -1,0 +1,2133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VOC平台 · 服务 NSR</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #1890ff;
+  --primary-soft: #e6f7ff;
+  --line-luckin: #45c2a5;
+  --line-industry: #f2bd42;
+  --text: rgba(0,0,0,.88);
+  --text-secondary: rgba(0,0,0,.45);
+  --border: #f0f0f0;
+  --bg: #f5f7fa;
+  --card: #fff;
+  --sidebar-w: 232px;
+  --header-h: 56px;
+  --radius: 8px;
+  --shadow: 0 1px 2px rgba(0,0,0,.03), 0 2px 8px rgba(0,0,0,.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+}
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: var(--sidebar-w);
+  background: #001529;
+  color: rgba(255,255,255,.65);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+}
+.sidebar-brand {
+  padding: 0 20px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  margin-bottom: 8px;
+}
+.nav-group { margin-bottom: 4px; }
+.nav-group-title {
+  padding: 12px 20px 6px;
+  font-size: 12px;
+  letter-spacing: .04em;
+  color: rgba(255,255,255,.35);
+}
+.nav-item {
+  padding: 10px 20px 10px 28px;
+  cursor: pointer;
+  font-size: 14px;
+  border-left: 3px solid transparent;
+  transition: background .15s, color .15s;
+}
+.nav-item:hover { color: #fff; background: rgba(255,255,255,.05); }
+.nav-item.active {
+  color: #fff;
+  background: var(--primary);
+  border-left-color: #69c0ff;
+}
+.main-wrap { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.header {
+  height: var(--header-h);
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  flex-shrink: 0;
+}
+.header-brand { font-size: 16px; font-weight: 600; color: var(--text); }
+.header-user { color: var(--text-secondary); font-size: 14px; }
+.header-user strong { color: var(--text); font-weight: 500; }
+.content { padding: 20px 24px 28px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.page-title { font-size: 20px; font-weight: 600; margin-bottom: 16px; }
+.time-tabs {
+  display: inline-flex;
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 3px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.time-tabs button {
+  border: none;
+  background: transparent;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 6px;
+  font-family: inherit;
+}
+.time-tabs button:hover { color: var(--text); }
+.time-tabs button.active { background: var(--primary); color: #fff; }
+.content-top-filters .time-tabs {
+  margin-bottom: 0;
+}
+.summary-box {
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  border-radius: var(--radius);
+  border: 1px solid #d3adf7;
+  background: linear-gradient(105deg, #f9f0ff 0%, #efdbff 28%, #faf5ff 55%, #fff 100%);
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(0,0,0,.78);
+}
+.summary-box strong { color: #531dab; font-weight: 600; }
+.content-top-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-bottom: 16px;
+}
+.top-platform-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.top-platform-wrap select {
+  height: 32px;
+  min-width: 120px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 10px;
+  font-size: 13px;
+  font-family: inherit;
+  background: var(--card);
+}
+.chart-row {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.kpi-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  -webkit-overflow-scrolling: touch;
+}
+.kpi-row .kpi-card {
+  flex: 1 1 0;
+  min-width: 148px;
+}
+.trend-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+.trend-col-line,
+.trend-col-region {
+  min-width: 0;
+}
+@media (max-width: 1100px) {
+  .trend-split {
+    grid-template-columns: 1fr;
+  }
+}
+.trend-line-panel {
+  min-height: 280px;
+}
+.region-panel {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+.region-panel-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.region-panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text);
+}
+.region-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.region-metric-toggle {
+  display: inline-flex;
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2px;
+  background: var(--bg);
+}
+.region-metric-btn {
+  border: none;
+  background: transparent;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-family: inherit;
+  color: var(--text-secondary);
+}
+.region-metric-btn.active {
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 600;
+}
+.region-back-btn {
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text);
+}
+.region-back-btn:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+.region-bar-svg-wrap {
+  flex: 1;
+  min-height: 220px;
+}
+.region-bar-svg-wrap svg {
+  width: 100%;
+  display: block;
+  min-height: 220px;
+}
+.chart-filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  width: 100%;
+}
+@media (max-width: 1100px) {
+  .kpi-row .kpi-card {
+    min-width: 160px;
+    flex: 0 0 auto;
+  }
+}
+.kpi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  cursor: default;
+  box-shadow: var(--shadow);
+  transition: border-color .15s, box-shadow .15s;
+  border-left: 3px solid transparent;
+}
+.kpi-card:hover { border-color: #d9d9d9; }
+.kpi-card-hd {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.kpi-label { font-size: 13px; color: var(--text-secondary); }
+.kpi-tools { display: flex; gap: 2px; }
+.kpi-tools button {
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.kpi-tools button:hover { background: rgba(0,0,0,.04); color: var(--text); }
+.kpi-value { font-size: 24px; font-weight: 700; letter-spacing: -.02em; }
+.kpi-delta { font-size: 12px; margin-top: 6px; font-weight: 500; color: var(--text-secondary); }
+.kpi-delta.up { color: #f5222d; }
+.kpi-delta.down { color: #52c41a; }
+.chart-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 18px 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.chart-panel-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.chart-panel-hd--tabs {
+  align-items: flex-end;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+  margin-bottom: 12px;
+  gap: 8px 12px;
+}
+.chart-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin: 0; }
+.trend-gran-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding-top: 10px;
+  margin-top: 6px;
+  border-top: 1px solid var(--border);
+}
+.trend-gran-tabs {
+  display: inline-flex;
+  background: var(--bg);
+  border-radius: 6px;
+  padding: 2px;
+  border: 1px solid var(--border);
+}
+.trend-gran-btn {
+  border: none;
+  background: transparent;
+  padding: 5px 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+  font-family: inherit;
+}
+.trend-gran-btn.active {
+  background: var(--card);
+  color: var(--primary);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0,0,0,.06);
+}
+.chart-brand-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+.chart-brand-filter select {
+  height: 30px;
+  min-width: 140px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 13px;
+  font-family: inherit;
+  background: var(--card);
+}
+.chart-svg-wrap { flex: 1; min-height: 220px; }
+.chart-svg-wrap svg { width: 100%; height: 100%; display: block; min-height: 220px; }
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  padding-top: 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.chart-legend i {
+  width: 14px;
+  height: 3px;
+  border-radius: 1px;
+  display: inline-block;
+}
+.hot-section { margin-top: 8px; }
+.hot-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.btn-link {
+  border: none;
+  background: none;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  padding: 0;
+}
+.btn-link:hover { text-decoration: underline; }
+.voice-stack {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.voice-block {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fafafa;
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+.voice-block-hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.voice-block-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.voice-block-filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.voice-block-filters label { font-size: 12px; color: var(--text-secondary); margin: 0; }
+.voice-block-filters select {
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 10px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  min-width: 120px;
+}
+.voice-primary-inner { display: flex; flex-direction: column; gap: 12px; }
+.voice-primary-bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: stretch;
+  min-height: 240px;
+}
+@media (max-width: 960px) { .voice-primary-bottom { grid-template-columns: 1fr; } }
+.voice-primary-viz-col {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 10px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 0;
+}
+.voice-dims { padding: 4px 0 8px; padding-top: 30px; flex: 1; min-height: 0; }
+.voice-luckin-chart {
+  width: 100%;
+  height: 280px;
+  min-height: 248px;
+}
+.voice-chart-corner {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  z-index: 2;
+  display: flex;
+  gap: 2px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 2px;
+  background: rgba(255, 255, 255, 0.94);
+}
+.voice-metric-btn {
+  height: 24px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 11px;
+  color: #8c8c8c;
+  font-family: inherit;
+}
+.voice-metric-btn.active { background: var(--primary-soft); color: var(--primary); font-weight: 600; }
+.voice-primary-fb-col { min-width: 0; display: flex; flex-direction: column; min-height: 0; }
+.voice-box {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 10px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.voice-hd { margin-bottom: 8px; }
+.voice-hd-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.voice-cols {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  overflow: hidden;
+}
+@media (max-width: 640px) { .voice-cols { grid-template-columns: 1fr; } }
+.voice-col { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.voice-col h4 {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+.voice-col ul {
+  list-style: none;
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 2px;
+  min-height: 0;
+}
+.voice-col li {
+  font-size: 12px;
+  line-height: 1.45;
+  padding: 6px 0;
+  border-bottom: 1px dashed #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: flex-start;
+}
+.voice-col li:last-child { border-bottom: none; }
+.voice-col.pos h4 { color: #237804; }
+.voice-col.neg h4 { color: #ad6800; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th {
+  text-align: left;
+  padding: 8px 10px;
+  background: #fafafa;
+  color: var(--text-secondary);
+  font-weight: 500;
+  border-bottom: 1px solid var(--border);
+}
+.data-table td { padding: 8px 10px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table .idx { color: var(--text-secondary); width: 36px; }
+.data-table a {
+  color: var(--primary);
+  text-decoration: none;
+  cursor: pointer;
+}
+.data-table a:hover { text-decoration: underline; }
+.drawer-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  z-index: 900;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .2s, visibility .2s;
+}
+.drawer-mask.open { opacity: 1; visibility: visible; }
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(440px, 100vw - 24px);
+  height: 100%;
+  background: var(--card);
+  z-index: 901;
+  box-shadow: -4px 0 24px rgba(0,0,0,.12);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .25s ease;
+}
+.drawer.open { transform: translateX(0); }
+.drawer-hd {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.drawer-hd span { font-size: 16px; font-weight: 600; }
+.drawer-hd button {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-radius: var(--radius);
+}
+.drawer-hd button:hover { background: #f5f5f5; color: var(--text); }
+.drawer-toolbar {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+}
+.drawer-tabs { display: flex; flex-wrap: wrap; gap: 4px; }
+.drawer-tabs button {
+  border: none;
+  background: transparent;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 6px;
+  font-family: inherit;
+}
+.drawer-tabs button:hover { color: var(--text); }
+.drawer-tabs button.active { background: var(--primary-soft); color: var(--primary); font-weight: 500; }
+.drawer-toolbar select {
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 10px;
+  font-size: 13px;
+  font-family: inherit;
+}
+.drawer-bd { flex: 1; overflow-y: auto; padding: 12px 16px 24px; }
+.voice-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.voice-item:last-child { border-bottom: none; }
+.voice-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.voice-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e6f7ff, #f0f0f0);
+  flex-shrink: 0;
+}
+.voice-head { display: flex; align-items: center; gap: 10px; }
+.voice-text { font-size: 14px; line-height: 1.55; color: var(--text); margin-bottom: 8px; }
+.voice-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.voice-foot a { color: var(--primary); text-decoration: none; margin-left: auto; }
+.voice-foot a:hover { text-decoration: underline; }
+body.drawer-open { overflow: hidden; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand">VOC平台</div>
+    <div class="nav-group">
+      <div class="nav-group-title">线上体验</div>
+      <div class="nav-item">万单问题</div>
+      <div class="nav-item">营销 NSR</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">产品体验</div>
+      <div class="nav-item">产品 NSR</div>
+      <div class="nav-item">单品</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">服务体验</div>
+      <div class="nav-item">整体万单问题</div>
+      <div class="nav-item">服务万单问题</div>
+      <div class="nav-item active">服务 NSR</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">热点</div>
+      <div class="nav-item">热点事件追踪</div>
+    </div>
+  </aside>
+  <div class="main-wrap">
+    <header class="header">
+      <span class="header-brand">服务 NSR</span>
+      <div class="header-user">当前用户：<strong>张三</strong></div>
+    </header>
+    <main class="content">
+      <div class="content-top-filters">
+
+        <div class="time-tabs" id="timeTabs" role="tablist">
+          <button type="button" data-range="d7">近7天</button>
+          <button type="button" data-range="d30">近30天</button>
+          <button type="button" data-range="week">本周</button>
+          <button type="button" data-range="lastweek">上周</button>
+          <button type="button" data-range="month" class="active">本月</button>
+          <button type="button" data-range="lastmonth">上月</button>
+          <button type="button" data-range="custom">自定义</button>
+        </div>
+        <div class="top-platform-wrap">
+          <label for="topPlatformSel">平台</label>
+          <select id="topPlatformSel" aria-label="平台">
+            <option value="" selected>全部</option>
+            <option value="微博">微博</option>
+            <option value="小红书">小红书</option>
+            <option value="抖音">抖音</option>
+          </select>
+        </div>
+      </div>
+      <div class="summary-box" id="smartSummary"></div>
+      <div class="chart-row">
+        <div class="kpi-row" id="kpiStack"></div>
+        <div class="trend-split">
+          <div class="trend-col-line">
+            <div class="chart-panel trend-line-panel">
+              <div class="chart-panel-hd chart-panel-hd--tabs">
+                <div class="chart-filters-row">
+                  <label class="chart-brand-filter" for="trendMetricSel">指标
+                    <select id="trendMetricSel" aria-label="指标">
+                      <option value="nsr" selected>服务NSR</option>
+                      <option value="volume">服务声量</option>
+                      <option value="posvol">服务正向声量</option>
+                    </select>
+                  </label>
+                  <label class="chart-brand-filter" for="trendCompareBrand">分析维度
+                    <select id="trendCompareBrand" aria-label="品牌">
+                      <option value="industry" selected>行业</option>
+                      <option value="cotti">库迪</option>
+                      <option value="starbucks">星巴克</option>
+                      <option value="goodme">古茗</option>
+                      <option value="manner">Manner</option>
+                      <option value="mstand">MStand</option>
+                      <option value="luckycup">幸运咖</option>
+                    </select>
+                  </label>
+                  <label class="chart-brand-filter" for="trendSvcDim">筛选
+                    <select id="trendSvcDim" aria-label="趋势服务维度">
+                      <option value="" selected>整体</option>
+                      <option value="store">门店服务</option>
+                      <option value="delivery">配送服务</option>
+                      <option value="safety">食品安全</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+              <div class="chart-svg-wrap" id="chartWrap"></div>
+              <div class="chart-legend" id="chartLegend"></div>
+              <div class="trend-gran-row">
+                <div class="trend-gran-tabs" id="trendGranTabs" role="group" aria-label="趋势粒度">
+                  <button type="button" class="trend-gran-btn" data-gran="day">按天</button>
+                  <button type="button" class="trend-gran-btn active" data-gran="week">按周</button>
+                  <button type="button" class="trend-gran-btn" data-gran="month">按月</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="trend-col-region">
+            <div class="chart-panel region-panel">
+              <div class="region-panel-hd">
+                <h3 class="region-panel-title">区域分布</h3>
+                <div class="region-toolbar">
+                  <button type="button" class="region-back-btn" id="regionBarBack" hidden disabled>返回</button>
+                  <div class="region-metric-toggle" id="regionMetricToggle" role="group" aria-label="区域指标">
+                    <button type="button" class="region-metric-btn active" data-reg-metric="nsr">NSR</button>
+                    <button type="button" class="region-metric-btn" data-reg-metric="volume">声量</button>
+                  </div>
+                </div>
+              </div>
+              <div class="region-bar-svg-wrap" id="regionBarWrap"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hot-section">
+        <div class="hot-title">热门观点</div>
+        <div class="voice-stack" id="svcHotVoiceRoot">
+          <div class="voice-block">
+            <div class="voice-block-hd">
+              <div class="voice-block-title">瑞幸咖啡</div>
+              <div class="voice-block-filters">
+                <label for="svcLuckinDim">服务维度</label>
+                <select id="svcLuckinDim" aria-label="瑞幸维度">
+                  <option value="" selected>整体</option>
+                  <option value="store">门店服务</option>
+                  <option value="delivery">配送服务</option>
+                  <option value="safety">食品安全</option>
+                </select>
+                <label for="svcLuckinProvinceSel">省份</label>
+                <select id="svcLuckinProvinceSel" aria-label="瑞幸省份">
+                  <option value="" selected>全部</option>
+                  <option value="广东">广东</option>
+                  <option value="江苏">江苏</option>
+                  <option value="浙江">浙江</option>
+                  <option value="湖北">湖北</option>
+                  <option value="四川">四川</option>
+                  <option value="山东">山东</option>
+                  <option value="北京">北京</option>
+                  <option value="上海">上海</option>
+                </select>
+                <label for="svcLuckinCitySel">城市</label>
+                <select id="svcLuckinCitySel" aria-label="瑞幸城市">
+                  <option value="" selected>全部</option>
+                  <option value="北京">北京</option>
+                  <option value="上海">上海</option>
+                  <option value="广州">广州</option>
+                  <option value="深圳">深圳</option>
+                  <option value="武汉">武汉</option>
+                  <option value="杭州">杭州</option>
+                  <option value="成都">成都</option>
+                  <option value="南京">南京</option>
+                </select>
+              </div>
+            </div>
+            <div class="voice-primary-inner">
+              <div class="voice-primary-bottom">
+                <div class="voice-primary-viz-col">
+                  <div class="voice-chart-corner" id="svcLuckinMetricToggle" role="group" aria-label="瑞幸图表度量">
+                    <button type="button" class="voice-metric-btn active" data-metric="pct">占比</button>
+                    <button type="button" class="voice-metric-btn" data-metric="abs">数值</button>
+                  </div>
+                  <div class="voice-dims"><div class="voice-luckin-chart" id="svcLuckinBioChart"></div></div>
+                </div>
+                <div class="voice-primary-fb-col">
+                  <div class="voice-box">
+                    <div class="voice-hd"><div class="voice-hd-title" id="svcLuckinFbTitle">整体</div></div>
+                    <div class="voice-cols">
+                      <div class="voice-col pos"><h4>正向关键词</h4><ul id="svcLuckinPos"></ul></div>
+                      <div class="voice-col neg"><h4>负向关键词</h4><ul id="svcLuckinNeg"></ul></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="voice-block">
+            <div class="voice-block-hd">
+              <div class="voice-block-title">行业</div>
+              <div class="voice-block-filters">
+                <label for="svcIndustryBrand">品牌</label>
+                <select id="svcIndustryBrand" aria-label="行业品牌">
+                  <option value="" selected>全部品牌</option>
+                  <option value="库迪">库迪</option>
+                  <option value="星巴克">星巴克</option>
+                  <option value="古茗">古茗</option>
+                  <option value="Manner">Manner</option>
+                  <option value="MStand">MStand</option>
+                  <option value="幸运咖">幸运咖</option>
+                </select>
+                <label for="svcIndustryDim">服务维度</label>
+                <select id="svcIndustryDim" aria-label="行业维度">
+                  <option value="" selected>整体</option>
+                  <option value="store">门店服务</option>
+                  <option value="delivery">配送服务</option>
+                  <option value="safety">食品安全</option>
+                </select>
+                <label for="svcIndustryProvinceSel">省份</label>
+                <select id="svcIndustryProvinceSel" aria-label="行业省份">
+                  <option value="" selected>全部</option>
+                  <option value="广东">广东</option>
+                  <option value="江苏">江苏</option>
+                  <option value="浙江">浙江</option>
+                  <option value="湖北">湖北</option>
+                  <option value="四川">四川</option>
+                  <option value="山东">山东</option>
+                  <option value="北京">北京</option>
+                  <option value="上海">上海</option>
+                </select>
+                <label for="svcIndustryCitySel">城市</label>
+                <select id="svcIndustryCitySel" aria-label="行业城市">
+                  <option value="" selected>全部</option>
+                  <option value="北京">北京</option>
+                  <option value="上海">上海</option>
+                  <option value="广州">广州</option>
+                  <option value="深圳">深圳</option>
+                  <option value="武汉">武汉</option>
+                  <option value="杭州">杭州</option>
+                  <option value="成都">成都</option>
+                  <option value="南京">南京</option>
+                </select>
+              </div>
+            </div>
+            <div class="voice-primary-inner">
+              <div class="voice-primary-bottom">
+                <div class="voice-primary-viz-col">
+                  <div class="voice-chart-corner" id="svcIndustryMetricToggle" role="group" aria-label="行业图表度量">
+                    <button type="button" class="voice-metric-btn active" data-metric="pct">占比</button>
+                    <button type="button" class="voice-metric-btn" data-metric="abs">数值</button>
+                  </div>
+                  <div class="voice-dims"><div class="voice-luckin-chart" id="svcIndustryBioChart"></div></div>
+                </div>
+                <div class="voice-primary-fb-col">
+                  <div class="voice-box">
+                    <div class="voice-hd"><div class="voice-hd-title" id="svcIndustryFbTitle">整体</div></div>
+                    <div class="voice-cols">
+                      <div class="voice-col pos"><h4>正向关键词</h4><ul id="svcIndustryPos"></ul></div>
+                      <div class="voice-col neg"><h4>负向关键词</h4><ul id="svcIndustryNeg"></ul></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<div class="drawer-mask" id="drawerMask"></div>
+<div class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-hd">
+    <span>{关键词}·{正负}·用户原声</span>
+    <button type="button" id="drawerClose" aria-label="关闭">×</button>
+  </div>
+  <div class="drawer-toolbar">
+    <div class="drawer-tabs" id="platformTabs"></div>
+    <select id="drawerOpinionSel" aria-label="观点"></select>
+  </div>
+  <div class="drawer-bd" id="drawerList"></div>
+</div>
+<script>
+(function () {
+  var chartConfig = {
+    nsr: {
+      title: "服务 NSR 趋势",
+      l1: "瑞幸服务 NSR",
+      l2: "行业服务 NSR",
+      luckin: [40.2, 40.8, 41.1, 41.5, 42, 42.3, 42.8, 43, 43.2, 43.1, 43.4, 43.1, 43.2, 43.1, 43.3, 43.1, 43.2],
+      industry: [38.5, 38.9, 39.2, 39.4, 39.8, 40, 40.2, 40.5, 40.7, 40.9, 41, 41.1, 41.2, 41.1, 41.3, 41.2, 41.4],
+      yMax: 50,
+      yMin: 35
+    },
+    volume: {
+      title: "服务声量 趋势",
+      l1: "服务声量",
+      l2: "行业服务声量",
+      luckin: [3200, 3400, 3100, 3600, 3800, 3700, 3900, 4100, 4000, 4200, 4300, 4150, 4400, 4500, 4350, 4600, 4550],
+      industry: [2800, 2900, 3000, 3100, 3050, 3200, 3150, 3300, 3400, 3350, 3500, 3450, 3600, 3550, 3700, 3650, 3800],
+      yMax: 5000,
+      yMin: 0
+    },
+    posvol: {
+      title: "服务正向声量 趋势",
+      l1: "服务正向声量",
+      l2: "行业正向服务声量",
+      luckin: [920, 940, 910, 960, 980, 970, 990, 1010, 1000, 1020, 1040, 1030, 1050, 1060, 1045, 1070, 1065],
+      industry: [800, 820, 810, 840, 850, 830, 860, 880, 870, 890, 900, 880, 910, 920, 900, 930, 920],
+      yMax: 1200,
+      yMin: 600
+    }
+  };
+  var trendBrandKey = "industry";
+  var trendBrandLabel = {
+    industry: "行业",
+    cotti: "库迪",
+    starbucks: "星巴克",
+    goodme: "古茗",
+    manner: "Manner",
+    mstand: "MStand",
+    luckycup: "幸运咖"
+  };
+  var trendTabKey = "nsr";
+  var trendGranularity = "week";
+  function getIndustryTrendLine() {
+    var cfg = chartConfig[trendTabKey];
+    var base = cfg.industry;
+    if (trendBrandKey === "industry") return base;
+    var dk = trendTabKey;
+    var mul = dk === "nsr" ? 0.9 : dk === "volume" ? 55 : 16;
+    var seed = { cotti: 1, starbucks: 0.82, goodme: 0.95, manner: 0.68, mstand: 0.74, luckycup: 1.12 }[trendBrandKey] || 0.85;
+    return base.map(function (v, i) {
+      var d = (Math.sin(i * 0.55) * seed - seed / 2) * mul;
+      var n = v + d;
+      if (dk === "nsr") return Math.round(n * 10) / 10;
+      return Math.max(0, Math.round(n));
+    });
+  }
+  function compareLegendSecond(cfg) {
+    if (trendBrandKey === "industry") return cfg.l2;
+    return trendBrandLabel[trendBrandKey] + cfg.l2.replace(/^行业/, "");
+  }
+  function pad2(n) {
+    return (n < 10 ? "0" : "") + n;
+  }
+  function buildTrendSlice(gran) {
+    var baseCfg = chartConfig[trendTabKey];
+    var indFull = getIndustryTrendLine();
+    var L = baseCfg.luckin;
+    var len = L.length;
+    var n = gran === "month" ? 6 : gran === "day" ? len : 10;
+    n = Math.max(1, Math.min(n, len));
+    var luckin = [],
+      industry = [],
+      dates = [],
+      i,
+      idx;
+    var weekStartUtc = Date.UTC(2026, 0, 5);
+    var monthStartUtc = Date.UTC(2025, 10, 1);
+    var dayStartUtc = Date.UTC(2026, 2, 4);
+    for (i = 0; i < n; i++) {
+      if (gran === "day") {
+        idx = Math.min(i, len - 1);
+      } else {
+        idx = Math.round((n <= 1 ? 0 : i / (n - 1)) * (len - 1));
+      }
+      var dimK = (document.getElementById("trendSvcDim") || {}).value || "";
+      var platK = (document.getElementById("topPlatformSel") || {}).value || "";
+      var sk = hashStr32(dimK + "|" + platK + "|" + trendTabKey + "|" + i) % 23;
+      var l = L[idx];
+      var ind = indFull[idx];
+      if (trendTabKey === "nsr") {
+        l = l + (sk - 11) / 20;
+        ind = ind + ((sk + i) % 15 - 7) / 20;
+        l = Math.min(baseCfg.yMax - 0.15, Math.max(baseCfg.yMin + 0.15, l));
+        ind = Math.min(baseCfg.yMax - 0.15, Math.max(baseCfg.yMin + 0.15, ind));
+      } else {
+        l = Math.max(0, Math.round(l * (1 + (sk - 11) / 120)));
+        ind = Math.max(0, Math.round(ind * (1 + ((sk + i) % 15 - 7) / 120)));
+      }
+      luckin.push(l);
+      industry.push(ind);
+      if (gran === "month") {
+        var dm = new Date(monthStartUtc);
+        dm.setUTCMonth(dm.getUTCMonth() + i);
+        dates.push(dm.getUTCFullYear() + "-" + pad2(dm.getUTCMonth() + 1));
+      } else if (gran === "week") {
+        var wk = new Date(weekStartUtc + i * 7 * 864e5);
+        dates.push("W" + (i + 1) + "(" + pad2(wk.getUTCMonth() + 1) + pad2(wk.getUTCDate()) + ")");
+      } else {
+        var dayDt = new Date(dayStartUtc + i * 864e5);
+        dates.push(dayDt.getUTCMonth() + 1 + "-" + dayDt.getUTCDate());
+      }
+    }
+    return { luckin: luckin, industry: industry, dates: dates };
+  }
+  var kpis = [
+    { key: "nsr", label: "服务 NSR", value: "43.1%", delta: "环比 ▲ 2.2pp", up: true },
+    { key: "volume", label: "服务声量", value: "30,12", delta: "环比 ▲ 1.2%", up: true },
+    { key: "posvol", label: "服务正向声量", value: "20,987", delta: "环比 ▲ 2.2%", up: true },
+    { key: "ind_nsr", label: "行业服务 NSR", value: "41.2%", delta: "环比 ▲ 0.3pp", up: true },
+    { key: "ind_volume", label: "行业服务声量", value: "28,560", delta: "环比 ▼ 0.8%", up: false },
+    { key: "ind_posvol", label: "行业服务正向声量", value: "9,102", delta: "环比 ▲ 1.1%", up: true }
+  ];
+  var svcLuckinMetric = "pct";
+  var svcIndustryMetric = "pct";
+  var svcBioCharts = { luckin: null, industry: null };
+  function hashStr32(s) {
+    var h = 5381,
+      i;
+    for (i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+    return h >>> 0;
+  }
+  function dimByIdx(dimIdx) {
+    return serviceDimSpecs[dimIdx];
+  }
+  function industryPickMerged(dimKey, brand) {
+    var j,
+      dim = null;
+    for (j = 0; j < serviceDimSpecs.length; j++) {
+      if (serviceDimSpecs[j].key === dimKey) {
+        dim = serviceDimSpecs[j];
+        break;
+      }
+    }
+    if (!dim) return { pos: [], neg: [] };
+    if (!brand) return dim.merged;
+    return dim.brands[brand] || dim.merged;
+  }
+  function svcDimNums(dimIdx, rk, which, indBrand) {
+    var dim = dimByIdx(dimIdx);
+    if (!dim) return { neg: 1, pos: 1 };
+    var negSum = 0,
+      posSum = 0,
+      i,
+      ind;
+    if (which === "luckin") {
+      for (i = 0; i < dim.luckinNeg.length; i++) negSum += dim.luckinNeg[i].vol;
+      for (i = 0; i < dim.luckinPos.length; i++) posSum += dim.luckinPos[i].vol;
+    } else {
+      ind = industryPickMerged(dim.key, indBrand || "");
+      for (i = 0; i < ind.neg.length; i++) negSum += ind.neg[i].vol;
+      for (i = 0; i < ind.pos.length; i++) posSum += ind.pos[i].vol;
+    }
+    var h = hashStr32((rk || "") + "|" + dim.key + "|" + which + "|" + (indBrand || "")) % 401;
+    var f = rk ? 0.92 + (h % 13) / 100 : 1;
+    negSum = Math.round(negSum * f);
+    posSum = Math.round(posSum * (1.96 - f));
+    return { neg: Math.max(1, negSum), pos: Math.max(1, posSum) };
+  }
+  function svcActiveCats(dimFilter) {
+    if (!dimFilter) return ["门店服务", "配送服务", "食品安全"];
+    if (dimFilter === "store") return ["门店服务"];
+    if (dimFilter === "delivery") return ["配送服务"];
+    if (dimFilter === "safety") return ["食品安全"];
+    return ["门店服务", "配送服务", "食品安全"];
+  }
+  function svcDimIndices(dimFilter) {
+    if (!dimFilter) return [0, 1, 2];
+    if (dimFilter === "store") return [0];
+    if (dimFilter === "delivery") return [1];
+    if (dimFilter === "safety") return [2];
+    return [0, 1, 2];
+  }
+  function disposeSvcBio(w) {
+    var o = svcBioCharts[w];
+    if (o) {
+      try {
+        o.dispose();
+      } catch (err) {}
+      svcBioCharts[w] = null;
+    }
+  }
+  function getSvcGeoKey(which) {
+    var p = which === "luckin" ? "svcLuckinProvinceSel" : "svcIndustryProvinceSel";
+    var c = which === "luckin" ? "svcLuckinCitySel" : "svcIndustryCitySel";
+    var pv = (document.getElementById(p) || {}).value || "";
+    var cv = (document.getElementById(c) || {}).value || "";
+    return pv + "|" + cv;
+  }
+  function paintSvcBioChart(which) {
+    var domId = which === "luckin" ? "svcLuckinBioChart" : "svcIndustryBioChart";
+    var dom = document.getElementById(domId);
+    if (!dom || typeof echarts === "undefined") return;
+    disposeSvcBio(which);
+    var dimFilter =
+      which === "luckin"
+        ? (document.getElementById("svcLuckinDim") || {}).value || ""
+        : (document.getElementById("svcIndustryDim") || {}).value || "";
+    var rk = getSvcGeoKey(which);
+    var metricMode = which === "luckin" ? svcLuckinMetric : svcIndustryMetric;
+    var usePct = metricMode !== "abs";
+    var indBrand = which === "industry" ? (document.getElementById("svcIndustryBrand") || {}).value || "" : "";
+    var cats = svcActiveCats(dimFilter);
+    var idxs = svcDimIndices(dimFilter);
+    var negArr = [],
+      posArr = [],
+      i,
+      nv,
+      tot,
+      negPct,
+      posPct;
+    for (i = 0; i < idxs.length; i++) {
+      nv = svcDimNums(idxs[i], rk, which, indBrand);
+      if (usePct) {
+        tot = nv.neg + nv.pos;
+        negPct = tot ? (nv.neg / tot) * 100 : 0;
+        posPct = tot ? (nv.pos / tot) * 100 : 0;
+        negArr.push(-negPct);
+        posArr.push(posPct);
+      } else {
+        negArr.push(-nv.neg);
+        posArr.push(nv.pos);
+      }
+    }
+    var mx = 1;
+    for (i = 0; i < negArr.length; i++) {
+      mx = Math.max(mx, Math.abs(negArr[i]), posArr[i]);
+    }
+    var pad = usePct ? Math.max(mx * 0.06, 4) : Math.max(mx * 0.08, 8);
+    var negName = usePct ? "负向占比" : "负向数值";
+    var posName = usePct ? "正向占比" : "正向数值";
+    svcBioCharts[which] = echarts.init(dom, null, { renderer: "canvas" });
+    svcBioCharts[which].setOption({
+      color: ["#faad14", "#389e0d"],
+      tooltip: {
+        trigger: "axis",
+        axisPointer: { type: "shadow" },
+        formatter: function (params) {
+          if (!params || !params.length) return "";
+          var lines = [params[0].axisValueLabel || params[0].name || ""];
+          params.forEach(function (it) {
+            if (it.value == null) return;
+            if (usePct) lines.push(it.seriesName + "：" + Math.abs(it.value).toFixed(1) + "%");
+            else lines.push(it.seriesName + "：" + Math.abs(Math.round(it.value)).toLocaleString("zh-CN"));
+          });
+          return lines.join("<br/>");
+        }
+      },
+      legend: { data: [negName, posName], top: 4, left: "center", textStyle: { fontSize: 11 } },
+      grid: { left: 8, right: 8, top: 44, bottom: 16, containLabel: true },
+      xAxis: {
+        type: "value",
+        min: -(mx + pad),
+        max: mx + pad,
+        splitLine: { show: true, lineStyle: { type: "dashed", color: "#eee" } },
+        axisLine: { show: true, lineStyle: { color: "#d9d9d9" } },
+        axisLabel: {
+          formatter: function (v) {
+            var x = Math.abs(v);
+            if (usePct) return Math.round(x) + "%";
+            if (x >= 1e6) return (x / 1e6).toFixed(1) + "M";
+            if (x >= 1e3) return (x / 1e3).toFixed(1) + "k";
+            return Math.round(x).toLocaleString("zh-CN");
+          },
+          fontSize: 10
+        }
+      },
+      yAxis: {
+        type: "category",
+        inverse: true,
+        data: cats,
+        axisTick: { show: false },
+        axisLine: { show: true, lineStyle: { color: "#d9d9d9" } },
+        axisLabel: { fontSize: 11, color: "rgba(0,0,0,.88)" }
+      },
+      series: [
+        {
+          name: negName,
+          type: "bar",
+          data: negArr,
+          barGap: "-100%",
+          barMaxWidth: 22,
+          emphasis: { focus: "series" },
+          itemStyle: { color: "#faad14" },
+          label: {
+            show: true,
+            position: "left",
+            formatter: function (pa) {
+              if (usePct) return (-pa.value).toFixed(1) + "%";
+              return (-pa.value).toLocaleString("zh-CN");
+            },
+            fontSize: 11,
+            color: "#ad6800"
+          }
+        },
+        {
+          name: posName,
+          type: "bar",
+          data: posArr,
+          barGap: "-100%",
+          barMaxWidth: 22,
+          emphasis: { focus: "series" },
+          itemStyle: { color: "#389e0d" },
+          label: {
+            show: true,
+            position: "right",
+            formatter: function (pa) {
+              if (usePct) return pa.value.toFixed(1) + "%";
+              return pa.value.toLocaleString("zh-CN");
+            },
+            fontSize: 11,
+            color: "#389e0d"
+          }
+        }
+      ]
+    });
+    requestAnimationFrame(function () {
+      var c = svcBioCharts[which];
+      if (c) c.resize();
+    });
+  }
+  function filterDimLabel(v) {
+    if (!v) return "整体";
+    if (v === "store") return "门店服务";
+    if (v === "delivery") return "配送服务";
+    if (v === "safety") return "食品安全";
+    return "整体";
+  }
+  function industryDataRows() {
+    var dimKey = (document.getElementById("svcIndustryDim") || {}).value || "";
+    var brand = (document.getElementById("svcIndustryBrand") || {}).value || "";
+    function pick(d) {
+      return brand ? d.brands[brand] || d.merged : d.merged;
+    }
+    var pos = [],
+      neg = [];
+    if (!dimKey) {
+      serviceDimSpecs.forEach(function (d) {
+        var x = pick(d);
+        pos = pos.concat(x.pos);
+        neg = neg.concat(x.neg);
+      });
+      pos.sort(function (a, b) { return b.vol - a.vol; });
+      neg.sort(function (a, b) { return b.vol - a.vol; });
+      return { pos: pos.slice(0, 5), neg: neg.slice(0, 5) };
+    }
+    var d = serviceDimSpecs.filter(function (x) { return x.key === dimKey; })[0];
+    if (!d) return { pos: [], neg: [] };
+    var x = pick(d);
+    return { pos: x.pos.slice(0, 5), neg: x.neg.slice(0, 5) };
+  }
+  function luckinDataRows() {
+    var dimKey = (document.getElementById("svcLuckinDim") || {}).value || "";
+    var pos = [],
+      neg = [];
+    if (!dimKey) {
+      serviceDimSpecs.forEach(function (d) {
+        pos = pos.concat(d.luckinPos);
+        neg = neg.concat(d.luckinNeg);
+      });
+      pos.sort(function (a, b) { return b.vol - a.vol; });
+      neg.sort(function (a, b) { return b.vol - a.vol; });
+      return { pos: pos.slice(0, 5), neg: neg.slice(0, 5) };
+    }
+    var d = serviceDimSpecs.filter(function (x) { return x.key === dimKey; })[0];
+    if (!d) return { pos: [], neg: [] };
+    return { pos: d.luckinPos.slice(0, 5), neg: d.luckinNeg.slice(0, 5) };
+  }
+  function renderSvcHotUl(rows) {
+    return rows
+      .map(function (r, idx) {
+        return (
+          '<li><span>' +
+          (idx + 1) +
+          ". " +
+          esc(r.name) +
+          ' <span style="color:#8c8c8c">' +
+          r.vol.toLocaleString() +
+          '</span></span><a href="#" class="btn-link" data-opinion="' +
+          esc(r.id) +
+          '">原声</a></li>'
+        );
+      })
+      .join("");
+  }
+  function setSvcMetricToggleUi(containerId, mode) {
+    var c = document.getElementById(containerId);
+    if (!c) return;
+    c.querySelectorAll(".voice-metric-btn").forEach(function (btn) {
+      btn.classList.toggle("active", btn.getAttribute("data-metric") === mode);
+    });
+  }
+  function refreshSvcHotVoiceUI() {
+    var lr = luckinDataRows();
+    var ir = industryDataRows();
+    document.getElementById("svcLuckinPos").innerHTML = renderSvcHotUl(lr.pos);
+    document.getElementById("svcLuckinNeg").innerHTML = renderSvcHotUl(lr.neg);
+    document.getElementById("svcIndustryPos").innerHTML = renderSvcHotUl(ir.pos);
+    document.getElementById("svcIndustryNeg").innerHTML = renderSvcHotUl(ir.neg);
+    var ld = (document.getElementById("svcLuckinDim") || {}).value || "";
+    document.getElementById("svcLuckinFbTitle").textContent = filterDimLabel(ld);
+    var idim = (document.getElementById("svcIndustryDim") || {}).value || "";
+    var ib = (document.getElementById("svcIndustryBrand") || {}).value || "";
+    document.getElementById("svcIndustryFbTitle").textContent =
+      filterDimLabel(idim) + (ib ? " · " + ib : "");
+    paintSvcBioChart("luckin");
+    paintSvcBioChart("industry");
+    bindOpinionLinks(document.getElementById("svcHotVoiceRoot"));
+  }
+  function wireSvcHotVoice() {
+    setSvcMetricToggleUi("svcLuckinMetricToggle", svcLuckinMetric);
+    setSvcMetricToggleUi("svcIndustryMetricToggle", svcIndustryMetric);
+    ["svcLuckinDim", "svcLuckinCitySel", "svcIndustryDim", "svcIndustryCitySel", "svcIndustryBrand"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener("change", refreshSvcHotVoiceUI);
+    });
+    ["svcLuckinProvinceSel", "svcIndustryProvinceSel"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener("change", function () {
+        syncSvcCityOptions(id.indexOf("Luckin") >= 0 ? "luckin" : "industry");
+        refreshSvcHotVoiceUI();
+      });
+    });
+    document.getElementById("svcLuckinMetricToggle").addEventListener("click", function (e) {
+      var b = e.target.closest(".voice-metric-btn");
+      if (!b) return;
+      svcLuckinMetric = b.getAttribute("data-metric") || "pct";
+      setSvcMetricToggleUi("svcLuckinMetricToggle", svcLuckinMetric);
+      paintSvcBioChart("luckin");
+    });
+    document.getElementById("svcIndustryMetricToggle").addEventListener("click", function (e) {
+      var b = e.target.closest(".voice-metric-btn");
+      if (!b) return;
+      svcIndustryMetric = b.getAttribute("data-metric") || "pct";
+      setSvcMetricToggleUi("svcIndustryMetricToggle", svcIndustryMetric);
+      paintSvcBioChart("industry");
+    });
+    window.addEventListener("resize", function () {
+      if (svcBioCharts.luckin) svcBioCharts.luckin.resize();
+      if (svcBioCharts.industry) svcBioCharts.industry.resize();
+    });
+    syncSvcCityOptions("luckin");
+    syncSvcCityOptions("industry");
+    refreshSvcHotVoiceUI();
+  }
+  function svcBrandPack(pos, neg) {
+    return { pos: pos, neg: neg };
+  }
+  var serviceDimSpecs = [
+    {
+      key: "store",
+      title: "门店服务",
+      luckinViz: [
+        { label: "响应速度", neg: 22, pos: 78 },
+        { label: "人员态度", neg: 18, pos: 82 },
+        { label: "环境整洁", neg: 15, pos: 85 }
+      ],
+      luckinPos: [
+        { id: "st_lp1", name: "出杯速度快", vol: 10000 },
+        { id: "st_lp2", name: "店员态度好", vol: 8920 },
+        { id: "st_lp3", name: "取餐动线清晰", vol: 7650 },
+        { id: "st_lp4", name: "门店环境整洁", vol: 6210 }
+      ],
+      luckinNeg: [
+        { id: "st_ln1", name: "等待时间过长", vol: 8200 },
+        { id: "st_ln2", name: "叫号屏信息不准", vol: 6540 },
+        { id: "st_ln3", name: "高峰期排队混乱", vol: 5100 },
+        { id: "st_ln4", name: "客诉响应慢", vol: 4300 }
+      ],
+      brands: {
+        库迪: svcBrandPack(
+          [
+            { id: "st_cd_p1", name: "性价比感知强", vol: 5600 },
+            { id: "st_cd_p2", name: "取餐提醒及时", vol: 4200 }
+          ],
+          [
+            { id: "st_cd_n1", name: "门店卫生参差", vol: 4800 },
+            { id: "st_cd_n2", name: "服务态度波动", vol: 3900 }
+          ]
+        ),
+        星巴克: svcBrandPack(
+          [
+            { id: "st_sb_p1", name: "第三空间体验", vol: 6100 },
+            { id: "st_sb_p2", name: "伙伴专业度高", vol: 5300 }
+          ],
+          [
+            { id: "st_sb_n1", name: "排队久", vol: 5500 },
+            { id: "st_sb_n2", name: "价格敏感", vol: 4400 }
+          ]
+        ),
+        古茗: svcBrandPack(
+          [{ id: "st_gm_p1", name: "取餐口令清晰", vol: 3800 }],
+          [{ id: "st_gm_n1", name: "高峰出杯波动", vol: 3600 }]
+        ),
+        Manner: svcBrandPack(
+          [{ id: "st_mn_p1", name: "小店效率高", vol: 2900 }],
+          [{ id: "st_mn_n1", name: "座位偏少", vol: 2700 }]
+        ),
+        MStand: svcBrandPack(
+          [{ id: "st_ms_p1", name: "空间设计感", vol: 2600 }],
+          [{ id: "st_ms_n1", name: "动线略挤", vol: 2400 }]
+        ),
+        幸运咖: svcBrandPack(
+          [{ id: "st_xy_p1", name: "出杯效率", vol: 3100 }],
+          [{ id: "st_xy_n1", name: "门店嘈杂", vol: 2800 }]
+        )
+      },
+      merged: null
+    },
+    {
+      key: "delivery",
+      title: "配送服务",
+      luckinViz: [
+        { label: "准时送达", neg: 20, pos: 80 },
+        { label: "包装完好", neg: 25, pos: 75 },
+        { label: "骑手沟通", neg: 28, pos: 72 }
+      ],
+      luckinPos: [
+        { id: "dl_lp1", name: "保温效果好", vol: 7200 },
+        { id: "dl_lp2", name: "配送轨迹清晰", vol: 6500 },
+        { id: "dl_lp3", name: "准时率高", vol: 5800 },
+        { id: "dl_lp4", name: "封口牢固", vol: 4900 }
+      ],
+      luckinNeg: [
+        { id: "dl_ln1", name: "雨天延迟", vol: 6100 },
+        { id: "dl_ln2", name: "撒漏偶发", vol: 5200 },
+        { id: "dl_ln3", name: "备注执行偏差", vol: 4400 },
+        { id: "dl_ln4", name: "取餐点难找", vol: 3700 }
+      ],
+      brands: {
+        库迪: svcBrandPack(
+          [
+            { id: "dl_cd_p1", name: "券后配送划算", vol: 4100 },
+            { id: "dl_cd_p2", name: "骑手礼貌", vol: 3500 }
+          ],
+          [{ id: "dl_cd_n1", name: "高峰派单慢", vol: 4000 }]
+        ),
+        星巴克: svcBrandPack(
+          [{ id: "dl_sb_p1", name: "专星送体验", vol: 4800 }],
+          [{ id: "dl_sb_n1", name: "远距离费敏感", vol: 3600 }]
+        ),
+        古茗: svcBrandPack(
+          [{ id: "dl_gm_p1", name: "果茶到手完整", vol: 3300 }],
+          [{ id: "dl_gm_n1", name: "冰饮融化快", vol: 3100 }]
+        ),
+        Manner: svcBrandPack(
+          [{ id: "dl_mn_p1", name: "写字楼送达快", vol: 2500 }],
+          [{ id: "dl_mn_n1", name: "取餐柜满格", vol: 2300 }]
+        ),
+        MStand: svcBrandPack(
+          [{ id: "dl_ms_p1", name: "联名杯套完整", vol: 2100 }],
+          [{ id: "dl_ms_n1", name: "配送时段窄", vol: 2000 }]
+        ),
+        幸运咖: svcBrandPack(
+          [{ id: "dl_xy_p1", name: "乡镇覆盖", vol: 2800 }],
+          [{ id: "dl_xy_n1", name: "包装简装", vol: 2600 }]
+        )
+      },
+      merged: null
+    },
+    {
+      key: "safety",
+      title: "食品安全",
+      luckinViz: [
+        { label: "标签合规", neg: 12, pos: 88 },
+        { label: "封口规范", neg: 16, pos: 84 },
+        { label: "原料透明", neg: 14, pos: 86 }
+      ],
+      luckinPos: [
+        { id: "sf_lp1", name: "杯贴信息清楚", vol: 5400 },
+        { id: "sf_lp2", name: "过敏原提示", vol: 4700 },
+        { id: "sf_lp3", name: "门店公示规范", vol: 4100 },
+        { id: "sf_lp4", name: "冷链体感好", vol: 3600 }
+      ],
+      luckinNeg: [
+        { id: "sf_ln1", name: "异物担忧", vol: 4800 },
+        { id: "sf_ln2", name: "效期质疑", vol: 4200 },
+        { id: "sf_ln3", name: "封签破损", vol: 3500 },
+        { id: "sf_ln4", name: "温度不达标", vol: 3100 }
+      ],
+      brands: {
+        库迪: svcBrandPack(
+          [{ id: "sf_cd_p1", name: "配方公示", vol: 3000 }],
+          [{ id: "sf_cd_n1", name: "卫生抽检话题", vol: 3400 }]
+        ),
+        星巴克: svcBrandPack(
+          [{ id: "sf_sb_p1", name: "过敏原管理", vol: 3900 }],
+          [{ id: "sf_sb_n1", name: "冰块卫生讨论", vol: 3200 }]
+        ),
+        古茗: svcBrandPack(
+          [{ id: "sf_gm_p1", name: "鲜果可见", vol: 2800 }],
+          [{ id: "sf_gm_n1", name: "少糖执行讨论", vol: 2600 }]
+        ),
+        Manner: svcBrandPack(
+          [{ id: "sf_mn_p1", name: "小杯量可控", vol: 1900 }],
+          [{ id: "sf_mn_n1", name: "自带杯卫生", vol: 1700 }]
+        ),
+        MStand: svcBrandPack(
+          [{ id: "sf_ms_p1", name: "联名物料合规", vol: 1800 }],
+          [{ id: "sf_ms_n1", name: "甜品储存讨论", vol: 1600 }]
+        ),
+        幸运咖: svcBrandPack(
+          [{ id: "sf_xy_p1", name: "原料性价比高", vol: 2200 }],
+          [{ id: "sf_xy_n1", name: "门店清洁参差", vol: 2500 }]
+        )
+      },
+      merged: null
+    }
+  ];
+  (function mergeSvcIndustry() {
+    serviceDimSpecs.forEach(function (dim) {
+      var pos = [];
+      var neg = [];
+      Object.keys(dim.brands).forEach(function (b) {
+        dim.brands[b].pos.forEach(function (x) { pos.push(x); });
+        dim.brands[b].neg.forEach(function (x) { neg.push(x); });
+      });
+      pos.sort(function (a, b) { return b.vol - a.vol; });
+      neg.sort(function (a, b) { return b.vol - a.vol; });
+      dim.merged = { pos: pos.slice(0, 8), neg: neg.slice(0, 8) };
+    });
+  })();
+  var voices = {};
+  function addVoices(id, text) {
+    voices[id] = {
+      all: [
+        { plat: "微博", user: "nicname", time: "2026/4/1 10:30", body: text, likes: 16, cmt: 16, share: 16, vol: 16 },
+        { plat: "小红书", user: "咖啡日记", time: "2026/4/2 14:20", body: text + "（小红书）", likes: 28, cmt: 9, share: 4, vol: 28 },
+        { plat: "抖音", user: "用户882910", time: "2026/4/3 09:05", body: text + " #瑞幸", likes: 120, cmt: 32, share: 11, vol: 120 }
+      ],
+      微博: [{ plat: "微博", user: "微博用户A", time: "2026/4/1 11:00", body: text, likes: 22, cmt: 8, share: 5, vol: 22 }],
+      小红书: [{ plat: "小红书", user: "小红薯", time: "2026/4/2 16:00", body: text + " 图文笔记", likes: 45, cmt: 12, share: 2, vol: 45 }],
+      抖音: [{ plat: "抖音", user: "抖友", time: "2026/4/3 20:15", body: text + " 短视频评论", likes: 88, cmt: 20, share: 6, vol: 88 }]
+    };
+  }
+  serviceDimSpecs.forEach(function (dim) {
+    dim.luckinPos.concat(dim.luckinNeg).forEach(function (o) {
+      addVoices(o.id, "瑞幸服务原声：「" + o.name + "」相关摘录。");
+    });
+    Object.keys(dim.brands).forEach(function (bk) {
+      dim.brands[bk].pos.concat(dim.brands[bk].neg).forEach(function (o) {
+        if (!voices[o.id]) addVoices(o.id, "行业侧「" + dim.title + "」·「" + o.name + "」样本。");
+      });
+    });
+    dim.merged.pos.concat(dim.merged.neg).forEach(function (o) {
+      if (!voices[o.id]) addVoices(o.id, "行业综合「" + dim.title + "」·「" + o.name + "」样本。");
+    });
+  });
+  var drawerContext = { opinionIds: [], currentId: null, platform: "all" };
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+  var hotGeoCityByProvince = {
+    广东: ["广州", "深圳"],
+    江苏: ["南京"],
+    浙江: ["杭州"],
+    湖北: ["武汉"],
+    四川: ["成都"],
+    山东: ["济南", "青岛"],
+    北京: ["北京"],
+    上海: ["上海"]
+  };
+  var hotGeoAllCities = [
+    "北京",
+    "上海",
+    "广州",
+    "深圳",
+    "武汉",
+    "杭州",
+    "成都",
+    "南京",
+    "济南",
+    "青岛",
+    "东莞",
+    "苏州",
+    "无锡",
+    "宁波",
+    "宜昌",
+    "绵阳"
+  ];
+  function syncSvcCityOptions(which) {
+    var ps = which === "luckin" ? "svcLuckinProvinceSel" : "svcIndustryProvinceSel";
+    var cs = which === "luckin" ? "svcLuckinCitySel" : "svcIndustryCitySel";
+    var pv = (document.getElementById(ps) || {}).value || "";
+    var citySel = document.getElementById(cs);
+    if (!citySel) return;
+    var prev = citySel.value;
+    var list = !pv ? hotGeoAllCities.slice() : (hotGeoCityByProvince[pv] || []).slice();
+    citySel.innerHTML =
+      '<option value="">全部</option>' +
+      list
+        .map(function (ct) {
+          return '<option value="' + esc(ct) + '">' + esc(ct) + "</option>";
+        })
+        .join("");
+    citySel.value = prev && list.indexOf(prev) >= 0 ? prev : "";
+  }
+  var regionBarMetric = "nsr";
+  var regionDrillProvince = null;
+  var regionProvinceBars = [
+    { name: "广东", nsr: 44.6, volume: 5120 },
+    { name: "江苏", nsr: 43.9, volume: 4280 },
+    { name: "浙江", nsr: 43.2, volume: 4010 },
+    { name: "山东", nsr: 42.8, volume: 3560 },
+    { name: "四川", nsr: 42.1, volume: 3180 },
+    { name: "湖北", nsr: 41.9, volume: 2920 }
+  ];
+  var regionCityByProvince = {
+    广东: [
+      { name: "广州", nsr: 45.2, volume: 2280 },
+      { name: "深圳", nsr: 44.8, volume: 2060 },
+      { name: "东莞", nsr: 43.1, volume: 620 }
+    ],
+    江苏: [
+      { name: "南京", nsr: 44.1, volume: 1680 },
+      { name: "苏州", nsr: 43.5, volume: 1420 },
+      { name: "无锡", nsr: 42.7, volume: 880 }
+    ],
+    浙江: [
+      { name: "杭州", nsr: 43.8, volume: 1590 },
+      { name: "宁波", nsr: 42.9, volume: 980 }
+    ],
+    山东: [
+      { name: "济南", nsr: 42.5, volume: 1120 },
+      { name: "青岛", nsr: 42.3, volume: 1080 }
+    ],
+    四川: [
+      { name: "成都", nsr: 42.4, volume: 1320 },
+      { name: "绵阳", nsr: 40.8, volume: 410 }
+    ],
+    湖北: [
+      { name: "武汉", nsr: 42.0, volume: 1210 },
+      { name: "宜昌", nsr: 40.2, volume: 380 }
+    ],
+    北京: [{ name: "北京", nsr: 44.0, volume: 1950 }],
+    上海: [{ name: "上海", nsr: 43.6, volume: 1820 }]
+  };
+  function renderRegionBar() {
+    var wrap = document.getElementById("regionBarWrap");
+    if (!wrap) return;
+    var metric = regionBarMetric;
+    var rows =
+      regionDrillProvince && regionCityByProvince[regionDrillProvince]
+        ? regionCityByProvince[regionDrillProvince].slice()
+        : regionProvinceBars.slice();
+    rows.sort(function (a, b) {
+      return (b[metric] || 0) - (a[metric] || 0);
+    });
+    var w = 480;
+    var h = 248;
+    var padL = 52;
+    var padR = 52;
+    var padT = 4;
+    var padB = 6;
+    var chartH = h - padT - padB;
+    var n = rows.length || 1;
+    var band = chartH / n;
+    var barH = Math.max(12, Math.min(20, band * 0.62));
+    var maxV = 1;
+    rows.forEach(function (r) {
+      maxV = Math.max(maxV, r[metric] || 0);
+    });
+    var x0 = padL;
+    var x1 = w - padR;
+    var bw = x1 - x0;
+    var fill = metric === "nsr" ? "#45c2a5" : "#1890ff";
+    var parts = rows.map(function (r, i) {
+      var yc = padT + i * band + band / 2;
+      var v = r[metric] || 0;
+      var bwpx = maxV ? (bw * v) / maxV : 0;
+      var lbl = metric === "nsr" ? v.toFixed(1) + "%" : Math.round(v).toLocaleString("zh-CN");
+      var cursor = !regionDrillProvince && regionCityByProvince[r.name] ? "pointer" : "default";
+      return (
+        '<g class="region-bar-row" data-name="' +
+        esc(r.name) +
+        '"><text x="' +
+        (padL - 6) +
+        '" y="' +
+        yc +
+        '" text-anchor="end" dominant-baseline="middle" font-size="11" fill="#595959">' +
+        esc(r.name) +
+        '</text><rect class="region-bar-hit" x="' +
+        x0 +
+        '" y="' +
+        (yc - barH / 2) +
+        '" width="' +
+        Math.max(2, bwpx) +
+        '" height="' +
+        barH +
+        '" rx="3" fill="' +
+        fill +
+        '" opacity="0.88" style="cursor:' +
+        cursor +
+        '"/><text x="' +
+        (x0 + bwpx + 5) +
+        '" y="' +
+        yc +
+        '" dominant-baseline="middle" font-size="10" fill="#8c8c8c">' +
+        esc(lbl) +
+        "</text></g>"
+      );
+    });
+    wrap.innerHTML =
+      '<svg viewBox="0 0 ' +
+      w +
+      " " +
+      h +
+      '" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
+      parts.join("") +
+      "</svg>";
+    var bb = document.getElementById("regionBarBack");
+    if (bb) {
+      bb.hidden = !regionDrillProvince;
+      bb.disabled = !regionDrillProvince;
+    }
+  }
+  function renderKpis() {
+    document.getElementById("kpiStack").innerHTML = kpis
+      .map(function (k) {
+        return (
+          '<div class="kpi-card" data-metric="' +
+          esc(k.key) +
+          '"><div class="kpi-card-hd"><div class="kpi-label">' +
+          esc(k.label) +
+          '</div><div class="kpi-tools"><button type="button" title="指标说明">?</button></div></div><div class="kpi-value">' +
+          esc(k.value) +
+          '</div><div class="kpi-delta ' +
+          (k.up ? "up" : "down") +
+          '">' +
+          esc(k.delta) +
+          "</div></div>"
+        );
+      })
+      .join("");
+  }
+  function activeTimeRangeLabel() {
+    var b = document.querySelector("#timeTabs button.active");
+    return (b && b.textContent.trim()) || "本月";
+  }
+  function updateSummary() {
+    var slice = buildTrendSlice(trendGranularity);
+    var lastL = slice.luckin[slice.luckin.length - 1];
+    var lastI = slice.industry[slice.industry.length - 1];
+    var prevL = slice.luckin[slice.luckin.length - 2];
+    var trend = lastL >= prevL ? "回升" : "回落";
+    var cmpNm = trendBrandKey === "industry" ? "行业" : trendBrandLabel[trendBrandKey];
+    var head =
+      trendTabKey === "nsr"
+        ? "服务体验 NSR"
+        : trendTabKey === "volume"
+          ? "服务声量"
+          : "服务正向声量";
+    var body;
+    if (trendTabKey === "nsr") {
+      body =
+        "瑞幸曲线呈<strong>" +
+        esc(trend) +
+        "</strong>态势，期末约 <strong>" +
+        esc(String(lastL)) +
+        "%</strong>，" +
+        esc(cmpNm) +
+        "约 <strong>" +
+        esc(String(lastI)) +
+        "%</strong>，差值约 <strong>" +
+        esc((lastL - lastI).toFixed(1)) +
+        "pp</strong>。";
+    } else {
+      body =
+        "瑞幸<strong>" +
+        esc(head) +
+        "</strong>呈<strong>" +
+        esc(trend) +
+        "</strong>，期末瑞幸约 <strong>" +
+        esc(String(Math.round(lastL))) +
+        "</strong>、" +
+        esc(cmpNm) +
+        "约 <strong>" +
+        esc(String(Math.round(lastI))) +
+        "</strong>，相对位置稳定。";
+    }
+    document.getElementById("smartSummary").innerHTML =
+      "<strong>智能总结：</strong>" +
+      esc(activeTimeRangeLabel()) +
+      "，<strong>" +
+      esc(head) +
+      "</strong> " +
+      body +
+      "建议结合高峰排队与叫号数据，对负向观点集中的门店做抽检复盘。";
+  }
+  function polyPoints(vals, w, h, pad, ymin, ymax) {
+    var n = vals.length;
+    return vals
+      .map(function (y, i) {
+        var x = pad + (n <= 1 ? w / 2 : (i / (n - 1)) * (w - 2 * pad));
+        var t = ymax === ymin ? 0.5 : (y - ymin) / (ymax - ymin);
+        var yy = h - pad - t * (h - 2 * pad);
+        return x + "," + yy;
+      })
+      .join(" ");
+  }
+  function renderChart() {
+    var baseCfg = chartConfig[trendTabKey];
+    var slice = buildTrendSlice(trendGranularity);
+    var dates = slice.dates;
+    var w = 640;
+    var h = 240;
+    var pad = 36;
+    var ymin = baseCfg.yMin;
+    var ymax = baseCfg.yMax;
+    var yTicks = 5;
+    var yLabels = [];
+    for (var t = 0; t <= yTicks; t++) {
+      var v = ymin + (t / yTicks) * (ymax - ymin);
+      var yy = h - pad - (t / yTicks) * (h - 2 * pad);
+      var vLab = trendTabKey === "nsr" ? Math.round(v * 10) / 10 : Math.round(v);
+      yLabels.push(
+        '<text x="' +
+        (pad - 8) +
+        '" y="' +
+        yy +
+        '" text-anchor="end" dominant-baseline="middle" font-size="10" fill="#999">' +
+        vLab +
+        "</text>"
+      );
+    }
+    var xStep = (w - 2 * pad) / (dates.length - 1);
+    var xFs = trendGranularity === "month" ? 10 : 8;
+    var xLabs = dates
+      .map(function (d, i) {
+        if (trendGranularity === "day" && dates.length > 10 && i % 2 !== 0 && i !== dates.length - 1) return "";
+        if (trendGranularity !== "day" && dates.length > 12 && i % 2 !== 0 && i !== dates.length - 1) return "";
+        var x = pad + i * xStep;
+        return (
+          '<text x="' +
+          x +
+          '" y="' +
+          (h - 8) +
+          '" text-anchor="middle" font-size="' +
+          xFs +
+          '" fill="#999">' +
+          esc(d) +
+          "</text>"
+        );
+      })
+      .join("");
+    var axisAndX =
+      '<line x1="' +
+      pad +
+      '" y1="' +
+      (h - pad) +
+      '" x2="' +
+      (w - pad) +
+      '" y2="' +
+      (h - pad) +
+      '" stroke="#eee"/>' +
+      yLabels.join("") +
+      xLabs;
+    var pts1 = polyPoints(slice.luckin, w, h, pad, ymin, ymax);
+    var pts2 = polyPoints(slice.industry, w, h, pad, ymin, ymax);
+    var svgInner =
+      axisAndX +
+      '<polyline fill="none" stroke="#45c2a5" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="' +
+      pts1 +
+      '"/>' +
+      '<polyline fill="none" stroke="#f2bd42" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="' +
+      pts2 +
+      '"/>';
+    var legHtml =
+      '<span><i style="background:#45c2a5"></i>' +
+      esc(baseCfg.l1) +
+      '</span><span><i style="background:#f2bd42"></i>' +
+      esc(compareLegendSecond(baseCfg)) +
+      "</span>";
+    document.getElementById("chartWrap").innerHTML =
+      '<svg viewBox="0 0 ' + w + " " + h + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' + svgInner + "</svg>";
+    document.getElementById("chartLegend").innerHTML = legHtml;
+    renderRegionBar();
+  }
+  function bindOpinionLinks(root) {
+    root.querySelectorAll("a[data-opinion]").forEach(function (a) {
+      a.addEventListener("click", function (e) {
+        e.preventDefault();
+        openDrawer([a.getAttribute("data-opinion")], a.getAttribute("data-opinion"));
+      });
+    });
+  }
+  function openDrawer(ids, primaryId) {
+    drawerContext.opinionIds = ids;
+    drawerContext.currentId = primaryId;
+    drawerContext.platform = "all";
+    document.body.classList.add("drawer-open");
+    document.getElementById("drawerMask").classList.add("open");
+    document.getElementById("drawer").classList.add("open");
+    document.getElementById("drawer").setAttribute("aria-hidden", "false");
+    renderDrawerTabs();
+    renderDrawerOpinionSelect();
+    renderDrawerList();
+  }
+  function closeDrawer() {
+    document.body.classList.remove("drawer-open");
+    document.getElementById("drawerMask").classList.remove("open");
+    document.getElementById("drawer").classList.remove("open");
+    document.getElementById("drawer").setAttribute("aria-hidden", "true");
+  }
+  function renderDrawerTabs() {
+    var plats = [
+      { key: "all", label: "全部" },
+      { key: "微博", label: "微博" },
+      { key: "小红书", label: "小红书" },
+      { key: "抖音", label: "抖音" }
+    ];
+    document.getElementById("platformTabs").innerHTML = plats
+      .map(function (p) {
+        return (
+          '<button type="button" data-plat="' +
+          esc(p.key) +
+          '" class="' +
+          (p.key === drawerContext.platform ? "active" : "") +
+          '">' +
+          esc(p.label) +
+          "</button>"
+        );
+      })
+      .join("");
+    document.getElementById("platformTabs").querySelectorAll("button").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        drawerContext.platform = btn.getAttribute("data-plat");
+        document.getElementById("platformTabs").querySelectorAll("button").forEach(function (b) {
+          b.classList.toggle("active", b.getAttribute("data-plat") === drawerContext.platform);
+        });
+        renderDrawerList();
+      });
+    });
+  }
+  function opinionLabel(id) {
+    var o, i, bk;
+    for (i = 0; i < serviceDimSpecs.length; i++) {
+      var dim = serviceDimSpecs[i];
+      o = dim.luckinPos.concat(dim.luckinNeg).filter(function (x) { return x.id === id; })[0];
+      if (o) return o.name;
+      o = dim.merged.pos.concat(dim.merged.neg).filter(function (x) { return x.id === id; })[0];
+      if (o) return o.name;
+      for (bk in dim.brands) {
+        o = dim.brands[bk].pos.concat(dim.brands[bk].neg).filter(function (x) { return x.id === id; })[0];
+        if (o) return o.name;
+      }
+    }
+    return id;
+  }
+  function renderDrawerOpinionSelect() {
+    var sel = document.getElementById("drawerOpinionSel");
+    sel.innerHTML = drawerContext.opinionIds
+      .map(function (id) {
+        return '<option value="' + esc(id) + '">' + esc(opinionLabel(id)) + "</option>";
+      })
+      .join("");
+    sel.value = drawerContext.currentId;
+    sel.onchange = function () {
+      drawerContext.currentId = this.value;
+      renderDrawerList();
+    };
+  }
+  function renderDrawerList() {
+    var id = drawerContext.currentId;
+    var pack = voices[id];
+    if (!pack) {
+      document.getElementById("drawerList").innerHTML = "<p style=\"color:#999;font-size:13px;\">暂无原声</p>";
+      return;
+    }
+    var plat = drawerContext.platform;
+    var list = plat === "all" ? pack.all : pack[plat] || [];
+    document.getElementById("drawerList").innerHTML = list
+      .map(function (v) {
+        return (
+          '<div class="voice-item"><div class="voice-meta"><div class="voice-head"><div class="voice-avatar"></div><span>' +
+          esc(v.user) +
+          "</span><span>" +
+          esc(v.plat) +
+          "</span><span>" +
+          esc(v.time) +
+          '</span></div></div><div class="voice-text">' +
+          esc(v.body) +
+          '</div><div class="voice-foot">浏览 ' +
+          v.vol +
+          " · 点赞" +
+          v.likes +
+          " · 评论" +
+          v.cmt +
+          " · 转发" +
+          v.share +
+          ' <a href="#" class="voice-src">查看原文 &gt;&gt;</a></div></div>'
+        );
+      })
+      .join("");
+  }
+  document.getElementById("drawerClose").addEventListener("click", closeDrawer);
+  document.getElementById("drawerMask").addEventListener("click", closeDrawer);
+  document.getElementById("drawerList").addEventListener("click", function (e) {
+    if (e.target.closest(".voice-src")) e.preventDefault();
+  });
+  document.getElementById("timeTabs").querySelectorAll("button").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.getElementById("timeTabs").querySelectorAll("button").forEach(function (b) {
+        b.classList.toggle("active", b === btn);
+      });
+      renderChart();
+      updateSummary();
+    });
+  });
+  document.getElementById("trendMetricSel").addEventListener("change", function () {
+    trendTabKey = this.value || "nsr";
+    renderChart();
+    updateSummary();
+  });
+  document.getElementById("trendGranTabs").querySelectorAll(".trend-gran-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      trendGranularity = btn.getAttribute("data-gran") || "week";
+      document.getElementById("trendGranTabs").querySelectorAll(".trend-gran-btn").forEach(function (b) {
+        b.classList.toggle("active", b === btn);
+      });
+      renderChart();
+      updateSummary();
+    });
+  });
+  document.getElementById("trendCompareBrand").addEventListener("change", function () {
+    trendBrandKey = this.value;
+    renderChart();
+    updateSummary();
+  });
+  document.getElementById("topPlatformSel").addEventListener("change", function () {
+    renderChart();
+    updateSummary();
+  });
+  document.getElementById("trendSvcDim").addEventListener("change", function () {
+    renderChart();
+    updateSummary();
+  });
+  document.getElementById("regionMetricToggle").addEventListener("click", function (e) {
+    var b = e.target.closest(".region-metric-btn");
+    if (!b) return;
+    regionBarMetric = b.getAttribute("data-reg-metric") || "nsr";
+    document.getElementById("regionMetricToggle").querySelectorAll(".region-metric-btn").forEach(function (btn) {
+      btn.classList.toggle("active", btn === b);
+    });
+    renderRegionBar();
+  });
+  document.getElementById("regionBarBack").addEventListener("click", function () {
+    if (!regionDrillProvince) return;
+    regionDrillProvince = null;
+    renderRegionBar();
+  });
+  document.getElementById("regionBarWrap").addEventListener("click", function (e) {
+    var hit = e.target.closest(".region-bar-hit");
+    if (!hit) return;
+    var row = hit.closest(".region-bar-row");
+    if (!row || regionDrillProvince) return;
+    var nm = row.getAttribute("data-name");
+    if (nm && regionCityByProvince[nm]) {
+      regionDrillProvince = nm;
+      renderRegionBar();
+    }
+  });
+  renderKpis();
+  renderChart();
+  updateSummary();
+  wireSvcHotVoice();
+})();
+</script>
+</body>
+</html>
