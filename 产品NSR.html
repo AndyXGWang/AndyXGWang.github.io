@@ -524,7 +524,7 @@ body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang S
           </div>
           <div class="product-grid-2" style="padding:0 10px 14px;">
             <div class="panel" style="box-shadow:none">
-              <div class="panel-hd"><div class="panel-title" id="productLeftTitle">瑞幸新品</div></div>
+              <div class="panel-hd"><div class="panel-title" id="productLeftTitle">瑞幸</div></div>
               <div style="padding:10px">
                 <div class="product-tab-filters">
                   <select id="productNameSel"></select>
@@ -541,7 +541,7 @@ body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang S
               </div>
             </div>
             <div class="panel" style="box-shadow:none">
-              <div class="panel-hd"><div class="panel-title">行业分析</div></div>
+              <div class="panel-hd"><div class="panel-title">行业</div></div>
               <div style="padding:10px">
                 <div class="product-tab-filters">
                   <select id="productBrandSel"></select>
@@ -765,7 +765,9 @@ var VOICE_DIMS=[
   {dim:"口味",nk:"香精感、偏甜",pk:"层次清晰、香浓"},
   {dim:"食安",nk:"卫生顾虑",pk:"标注规范"},
   {dim:"价格",nk:"原价敏感",pk:"券后划算"},
-  {dim:"颜值",nk:"杯贴模糊",pk:"包装吸睛"}
+  {dim:"颜值",nk:"杯贴模糊",pk:"包装吸睛"},
+  {dim:"情感需求",nk:"情绪价值不足",pk:"治愈、陪伴感"},
+  {dim:"功效",nk:"提神不明显",pk:"提神、饱腹"}
 ];
 function dimRatios(pid,idx,rk){
   var s=pid;
@@ -1971,7 +1973,7 @@ function renderProductTab(){
     bSel.innerHTML='<option value="">全部品牌</option>'+brands.filter(function(b){return b.key!=="luckin"}).map(function(b){return'<option value="'+b.key+'">'+esc(b.name)+'</option>'}).join("");
   }
   var brandKey="luckin";
-  document.getElementById("productLeftTitle").textContent="瑞幸新品";
+  document.getElementById("productLeftTitle").textContent="瑞幸";
   var leftList=products.filter(function(p){return p.brand===brandKey});
   var prevName=nSel.value;
   nSel.innerHTML='<option value="">商品名称</option>'+leftList.map(function(p){return'<option value="'+p.id+'">'+esc(p.name)+'</option>'}).join("");
