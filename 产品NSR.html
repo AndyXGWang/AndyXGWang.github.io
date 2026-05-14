@@ -837,8 +837,8 @@ function paintBidirectionalBioChart(which,domId,p,metricMode){
     mx=Math.max(mx,Math.abs(negArr[i]),posArr[i]);
   }
   var pad=usePct?Math.max(mx*0.06,4):Math.max(mx*0.08,8);
-  var negName=usePct?"负向占比":"负向数值";
-  var posName=usePct?"正向占比":"正向数值";
+  var negName=usePct?"负向":"负向";
+  var posName=usePct?"正向":"正向";
   voiceBioCharts[which]=echarts.init(dom,null,{renderer:"canvas"});
   voiceBioCharts[which].setOption({
     color:["#faad14","#389e0d"],
