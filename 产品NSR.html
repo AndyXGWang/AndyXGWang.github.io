@@ -463,7 +463,7 @@ body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang S
               <div class="brand-pane-bd">
               <div class="brand-table-wrap">
                 <table class="data-table ds-table">
-                  <thead><tr id="brandSkuHeadRow"><th>品牌</th><th>商品</th><th>上市日期</th><th>NSR</th><th>正向声量数</th><th>负向声量数</th><th>总声量</th></tr></thead>
+                  <thead><tr id="brandSkuHeadRow"><th>品牌</th><th>商品</th><th>上市日期</th><th>NSR</th><th>正向声量数</th><th>负向声量数</th><th>声量数</th></tr></thead>
                   <tbody id="brandSkuBody"></tbody>
                 </table>
               </div>
@@ -530,7 +530,7 @@ body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang S
                   <select id="productNameSel"></select>
                 </div>
                 <table class="data-table ds-table" style="margin-top:12px;width:100%">
-                  <thead><tr><th>新品名称</th><th>上市日期</th><th>NSR</th><th>操作</th></tr></thead>
+                  <thead><tr><th>新品名称</th><th>上市日期</th><th>新品 NSR</th><th>操作</th></tr></thead>
                   <tbody id="luckinProductBody"></tbody>
                 </table>
                 <div class="product-pagination" id="luckinProdPageBar">
@@ -548,7 +548,7 @@ body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang S
                   <select id="industryProductNameSel"></select>
                 </div>
                 <table class="data-table ds-table" style="margin-top:12px;width:100%">
-                  <thead><tr><th>品牌</th><th>新品名称</th><th>新品上市日期</th><th>NSR</th><th>操作</th></tr></thead>
+                  <thead><tr><th>品牌</th><th>新品名称</th><th>新品上市日期</th><th>新品 NSR</th><th>操作</th></tr></thead>
                   <tbody id="industryProductBody"></tbody>
                 </table>
                 <div class="product-pagination" id="industryProdPageBar">
@@ -837,8 +837,8 @@ function paintBidirectionalBioChart(which,domId,p,metricMode){
     mx=Math.max(mx,Math.abs(negArr[i]),posArr[i]);
   }
   var pad=usePct?Math.max(mx*0.06,4):Math.max(mx*0.08,8);
-  var negName=usePct?"负向":"负向";
-  var posName=usePct?"正向":"正向";
+  var negName=usePct?"负向占比":"负向数值";
+  var posName=usePct?"正向占比":"正向数值";
   voiceBioCharts[which]=echarts.init(dom,null,{renderer:"canvas"});
   voiceBioCharts[which].setOption({
     color:["#faad14","#389e0d"],
@@ -1537,7 +1537,7 @@ function hmTooltipMergeMocks(brandKey,monStr,reals){
     used[name]=1;
     nsr=Math.round((35.8+((h+31*j)%17)+((h*j)%11)/10)*10)/10;
     if(nsr>54)nsr=52.8;
-    comb.push({id:"_demo"+brandKey+j,brand:brandKey,name:name,nsr:nsr,launch:monStr});
+    comb.push({id:"_demo"+brandKey+j,brand:brandKey,name:name,nsr:nsr,launch:monStr,vol:8000+((h+13*j)%28)*1100});
   }
   return comb;
 }
@@ -1572,7 +1572,8 @@ function updateHmBrandBtn(){
 function hmCellBodyHtml(list){
   if(!list.length)return "";
   var top=list.reduce(function(a,p){return p.nsr>a.nsr?p:a});
-  return '<div class="hm-cell-name">「'+esc(top.name)+'」</div><div class="hm-nsr-label">产品NSR：'+Math.round(top.nsr)+'%</div>';
+  var volTxt=(top.vol!=null?top.vol:0).toLocaleString("zh-CN");
+  return '<div class="hm-cell-name">「'+esc(top.name)+'」</div><div class="hm-nsr-label">产品NSR：'+Math.round(top.nsr)+'%('+volTxt+')</div>';
 }
 function clampHmRangeWindow(){
   var n=hmWeeks.length;
@@ -1654,9 +1655,9 @@ function bindHeatmapHover(dataMap){
       var tbody=list.map(function(p){
         var pb=brandByKey(p.brand)?brandByKey(p.brand).name:p.brand;
         var ld=p.launch?esc(p.launch):"—";
-        return '<tr><td>'+esc(pb)+'</td><td>'+esc(p.name)+'</td><td>'+ld+'</td><td class="hm-tip-nsr">'+p.nsr.toFixed(1)+"%</td></tr>";
+        return '<tr><td>'+esc(pb)+'</td><td>'+esc(p.name)+'</td><td>'+ld+'</td><td class="hm-tip-nsr">'+p.nsr.toFixed(1)+"%</td><td>"+(p.vol!=null?p.vol.toLocaleString("zh-CN"):"—")+"</td></tr>";
       }).join("");
-      tip.innerHTML='<div class="hm-tip-body"><table class="hm-tip-table" aria-label="当周上新"><thead><tr><th scope="col">品牌</th><th scope="col">产品名称</th><th scope="col">上市日期</th><th scope="col">NSR</th></tr></thead><tbody>'+tbody+"</tbody></table></div>";
+      tip.innerHTML='<div class="hm-tip-body"><table class="hm-tip-table" aria-label="当周上新"><thead><tr><th scope="col">品牌</th><th scope="col">产品名称</th><th scope="col">上市日期</th><th scope="col">NSR</th><th scope="col">声量</th></tr></thead><tbody>'+tbody+"</tbody></table></div>";
       tip.classList.add("open");
       moveHmTip(e);
     });
