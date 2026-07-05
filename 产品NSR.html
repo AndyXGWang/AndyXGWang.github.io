@@ -230,7 +230,15 @@ body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang S
 @media(max-width:960px){#voiceBlockPrimary .voice-primary-bottom,#voiceBlockIndustry .voice-primary-bottom{grid-template-columns:1fr;min-height:0}}
 #voiceBlockPrimary .voice-primary-viz-col,#voiceBlockIndustry .voice-primary-viz-col{background:#fff;border:1px solid var(--border);border-radius:8px;padding:0 10px;min-width:0;display:flex;flex-direction:column;min-height:0;max-height:min(560px,72vh);position:relative}
 #voiceBlockPrimary .voice-primary-viz-col .voice-dims,#voiceBlockIndustry .voice-primary-viz-col .voice-dims{padding:4px 0 8px;padding-top:30px;overflow:visible;flex:1;min-height:0}
-.voice-chart-corner{position:absolute;top:6px;right:8px;z-index:2;display:flex;gap:2px;border:1px solid #eee;border-radius:8px;padding:2px;background:rgba(255,255,255,.94)}
+.voice-viz-toolbar{position:absolute;top:6px;left:8px;right:8px;z-index:2;display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;pointer-events:none}
+.voice-viz-toolbar>*{pointer-events:auto}
+.voice-drill-nav{display:flex;align-items:center;gap:6px;margin-right:auto;font-size:11px;line-height:1.3;padding:2px 8px;border:1px solid #eee;border-radius:8px;background:rgba(255,255,255,.94)}
+.voice-drill-nav[hidden]{display:none}
+.voice-drill-back{border:none;background:transparent;color:#1677ff;cursor:pointer;font-size:11px;padding:0;font-family:inherit;font-weight:600}
+.voice-drill-back:hover{text-decoration:underline}
+.voice-drill-back:focus-visible{outline:2px solid #1677ff;outline-offset:2px;border-radius:4px}
+.voice-drill-sep{color:#bfbfbf;font-size:11px;user-select:none;padding:0 2px}
+.voice-chart-corner{display:flex;gap:2px;border:1px solid #eee;border-radius:8px;padding:2px;background:rgba(255,255,255,.94);flex-shrink:0}
 .voice-metric-btn{height:24px;padding:0 8px;border:none;border-radius:6px;background:transparent;cursor:pointer;font-size:11px;color:#8c8c8c;font-family:inherit}
 .voice-metric-btn.active{background:#f0f7ff;color:#1677ff;font-weight:600}
 #voiceBlockPrimary .voice-luckin-chart,#voiceBlockIndustry .voice-industry-chart,#voiceBlockIndustry .voice-luckin-chart{width:100%;height:280px;min-height:248px}
@@ -587,9 +595,12 @@ body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang S
               <div class="voice-primary-inner">
                 <div class="voice-primary-bottom">
                   <div class="voice-primary-viz-col">
-                    <div class="voice-chart-corner" id="voiceLuckinMetricToggle" role="group" aria-label="图表指标">
-                      <button type="button" class="voice-metric-btn active" data-metric="pct">占比</button>
-                      <button type="button" class="voice-metric-btn" data-metric="abs">数值</button>
+                    <div class="voice-viz-toolbar">
+                      <div class="voice-drill-nav" id="voiceLuckinDrillNav" hidden></div>
+                      <div class="voice-chart-corner" id="voiceLuckinMetricToggle" role="group" aria-label="图表指标">
+                        <button type="button" class="voice-metric-btn active" data-metric="pct">占比</button>
+                        <button type="button" class="voice-metric-btn" data-metric="abs">数值</button>
+                      </div>
                     </div>
                     <div class="voice-dims" id="voicePrimaryDims"><div id="voiceLuckinChart" class="voice-luckin-chart"></div></div>
                   </div>
@@ -632,9 +643,12 @@ body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang S
               <div class="voice-primary-inner">
                 <div class="voice-primary-bottom">
                   <div class="voice-primary-viz-col">
-                    <div class="voice-chart-corner" id="voiceIndustryMetricToggle" role="group" aria-label="行业图表指标">
-                      <button type="button" class="voice-metric-btn active" data-metric="pct">占比</button>
-                      <button type="button" class="voice-metric-btn" data-metric="abs">数值</button>
+                    <div class="voice-viz-toolbar">
+                      <div class="voice-drill-nav" id="voiceIndustryDrillNav" hidden></div>
+                      <div class="voice-chart-corner" id="voiceIndustryMetricToggle" role="group" aria-label="行业图表指标">
+                        <button type="button" class="voice-metric-btn active" data-metric="pct">占比</button>
+                        <button type="button" class="voice-metric-btn" data-metric="abs">数值</button>
+                      </div>
                     </div>
                     <div class="voice-dims" id="voiceIndustryDims"><div id="voiceIndustryChart" class="voice-luckin-chart voice-industry-chart"></div></div>
                   </div>
@@ -769,6 +783,78 @@ var VOICE_DIMS=[
   {dim:"情感需求",nk:"情绪价值不足",pk:"治愈、陪伴感"},
   {dim:"功效",nk:"提神不明显",pk:"提神、饱腹"}
 ];
+var voiceDrillState={luckin:{level:0,stack:[]},industry:{level:0,stack:[]}};
+var voiceChartProduct={luckin:null,industry:null};
+function resetVoiceDrill(which){
+  voiceDrillState[which]={level:0,stack:[]};
+}
+function voiceDrillCategories(st){
+  if(!st||!st.level){
+    return VOICE_DIMS.map(function(d,i){return{name:d.dim,label:d.dim,idx:i,drillable:true};});
+  }
+  if(st.level===1){
+    var cnt=4,i;
+    var out=[];
+    for(i=0;i<cnt;i++)out.push({name:"下钻1层|"+i,label:"下钻1层",idx:i,drillable:true});
+    return out;
+  }
+  var j,cnt2=4,out2=[];
+  for(j=0;j<cnt2;j++)out2.push({name:"下钻2层|"+j,label:"下钻2层",idx:j,drillable:false});
+  return out2;
+}
+function voiceDrillDataIndex(st,rowIdx){
+  if(!st||!st.level)return rowIdx;
+  var base=st.stack[0].idx*11+rowIdx;
+  if(st.level>=2&&st.stack[1])base+=st.stack[1].idx*5+100;
+  return base;
+}
+function voiceDrillNavId(which){return which==="luckin"?"voiceLuckinDrillNav":"voiceIndustryDrillNav";}
+function renderVoiceDrillNav(which){
+  var nav=document.getElementById(voiceDrillNavId(which));
+  if(!nav)return;
+  var st=voiceDrillState[which];
+  if(!st.level){nav.hidden=true;nav.innerHTML="";return;}
+  var html="",i;
+  for(i=0;i<st.stack.length;i++){
+    html+='<button type="button" class="voice-drill-back" data-which="'+which+'" data-idx="'+i+'" aria-label="返回至'+esc(st.stack[i].name)+'">'+esc(st.stack[i].name)+'</button><span class="voice-drill-sep" aria-hidden="true">&gt;</span>';
+  }
+  nav.hidden=false;
+  nav.innerHTML=html;
+}
+function voiceDrillNavTo(which,idx){
+  var st=voiceDrillState[which];
+  if(!st.level||idx<0||idx>=st.stack.length)return;
+  if(idx===st.stack.length-1){
+    st.stack.pop();
+    st.level--;
+  }else{
+    st.stack=st.stack.slice(0,idx+1);
+    st.level=idx+1;
+  }
+  renderVoiceDrillNav(which);
+  var p=voiceChartProduct[which];
+  if(!p)return;
+  paintBidirectionalBioChart(which,which==="luckin"?"voiceLuckinChart":"voiceIndustryChart",p,which==="luckin"?voiceLuckinMetricMode:voiceIndustryMetricMode);
+}
+function voiceDrillBack(which){
+  var st=voiceDrillState[which];
+  if(!st.level)return;
+  voiceDrillNavTo(which,st.stack.length-1);
+}
+function voiceDrillInto(which,categoryName){
+  var st=voiceDrillState[which];
+  if(st.level>=2)return;
+  var cats=voiceDrillCategories(st);
+  var item=null,i;
+  for(i=0;i<cats.length;i++){if(cats[i].name===categoryName){item=cats[i];break;}}
+  if(!item||!item.drillable)return;
+  st.stack.push({name:item.label||item.name,idx:item.idx});
+  st.level++;
+  renderVoiceDrillNav(which);
+  var p=voiceChartProduct[which];
+  if(!p)return;
+  paintBidirectionalBioChart(which,which==="luckin"?"voiceLuckinChart":"voiceIndustryChart",p,which==="luckin"?voiceLuckinMetricMode:voiceIndustryMetricMode);
+}
 function dimRatios(pid,idx,rk){
   var s=pid;
   if(rk)s=pid+"\0"+rk;
@@ -816,11 +902,14 @@ function paintBidirectionalBioChart(which,domId,p,metricMode){
   if(!dom)return;
   disposeVoiceBioChart(which);
   if(!p||typeof echarts==="undefined")return;
+  voiceChartProduct[which]=p;
+  var st=voiceDrillState[which];
   var usePct=metricMode!=="abs";
+  var catItems=voiceDrillCategories(st);
   var cats=[],negArr=[],posArr=[],i;
-  for(i=0;i<VOICE_DIMS.length;i++){
-    cats.push(VOICE_DIMS[i].dim);
-    var nv=voiceVolNums(p,i,which);
+  for(i=0;i<catItems.length;i++){
+    cats.push(catItems[i].name);
+    var nv=voiceVolNums(p,voiceDrillDataIndex(st,i),which);
     if(usePct){
       var tot=nv.neg+nv.pos;
       var negPct=tot?nv.neg/tot*100:0;
@@ -832,6 +921,7 @@ function paintBidirectionalBioChart(which,domId,p,metricMode){
       posArr.push(nv.pos);
     }
   }
+  renderVoiceDrillNav(which);
   var mx=1;
   for(i=0;i<negArr.length;i++){
     mx=Math.max(mx,Math.abs(negArr[i]),posArr[i]);
@@ -839,6 +929,7 @@ function paintBidirectionalBioChart(which,domId,p,metricMode){
   var pad=usePct?Math.max(mx*0.06,4):Math.max(mx*0.08,8);
   var negName=usePct?"负向占比":"负向数值";
   var posName=usePct?"正向占比":"正向数值";
+  var canDrill=st.level<2;
   voiceBioCharts[which]=echarts.init(dom,null,{renderer:"canvas"});
   voiceBioCharts[which].setOption({
     color:["#faad14","#389e0d"],
@@ -847,12 +938,17 @@ function paintBidirectionalBioChart(which,domId,p,metricMode){
       axisPointer:{type:"shadow"},
       formatter:function(params){
         if(!params||!params.length)return"";
-        var lines=[params[0].axisValueLabel||params[0].name||""];
+        var axisLbl=params[0].axisValueLabel||params[0].name||"";
+        if(axisLbl.indexOf("|")>=0)axisLbl=axisLbl.split("|")[0];
+        var lines=[axisLbl];
         params.forEach(function(it){
           if(it.value==null)return;
           if(usePct)lines.push(it.seriesName+"："+Math.abs(it.value).toFixed(1)+"%");
           else lines.push(it.seriesName+"："+Math.abs(Math.round(it.value)).toLocaleString("zh-CN"));
         });
+        if(canDrill&&catItems.some(function(c){return c.name===(params[0].axisValueLabel||params[0].name)&&c.drillable;})){
+          lines.push('<span style="color:#1677ff">点击分类名称下钻</span>');
+        }
         return lines.join("<br/>");
       }
     },
@@ -878,10 +974,21 @@ function paintBidirectionalBioChart(which,domId,p,metricMode){
     yAxis:{
       type:"category",
       inverse:true,
+      triggerEvent:true,
       data:cats,
       axisTick:{show:false},
       axisLine:{show:true,lineStyle:{color:"#d9d9d9"}},
-      axisLabel:{fontSize:11,color:"rgba(0,0,0,.88)"}
+      axisLabel:{
+        fontSize:11,
+        formatter:function(v){
+          var p=v.indexOf("|");
+          return p>=0?v.slice(0,p):v;
+        },
+        color:function(value,idx){
+          var item=catItems[idx];
+          return item&&item.drillable&&canDrill?"#1677ff":"rgba(0,0,0,.88)";
+        }
+      }
     },
     series:[
       {
@@ -921,6 +1028,12 @@ function paintBidirectionalBioChart(which,domId,p,metricMode){
         }
       }
     ]
+  });
+  voiceBioCharts[which].off("click");
+  voiceBioCharts[which].on("click",function(params){
+    if(!canDrill||params.componentType!=="yAxis")return;
+    var name=params.value!=null?params.value:(params.name||"");
+    if(name)voiceDrillInto(which,name);
   });
   requestAnimationFrame(function(){
     var c=voiceBioCharts[which];
@@ -2024,6 +2137,8 @@ function productTableProductRow(p,isIndustry){
   return '<tr>'+brandTd+'<td>'+esc(p.name)+'</td><td>'+p.launch+'</td><td>'+p.nsr.toFixed(1)+'%</td><td><div class="op-row"><button class="btn-op" data-op="single" data-id="'+p.id+'">洞察</button><button class="btn-op primary" data-op="compare" data-id="'+p.id+'">'+(inCmp?"已选中":"对比")+'</button></div></td></tr>';
 }
 function renderVoiceTab(){
+  resetVoiceDrill("luckin");
+  resetVoiceDrill("industry");
   var luckSel=document.getElementById("voiceLuckinProdSel");
   var luckProducts=products.filter(function(p){return p.brand==="luckin"});
   var prevLuck=luckSel.value;
@@ -2259,6 +2374,13 @@ if(vIndMet)vIndMet.addEventListener("click",function(e){
   vIndMet.querySelectorAll(".voice-metric-btn").forEach(function(x){x.classList.toggle("active",x===b);});
   var pInd=productById(selectedFeedback);
   if(pInd)updateIndustryBioChart(pInd);
+});
+document.addEventListener("click",function(e){
+  var btn=e.target.closest(".voice-drill-back");
+  if(!btn)return;
+  var which=btn.getAttribute("data-which");
+  var idx=parseInt(btn.getAttribute("data-idx"),10);
+  if(which&&!isNaN(idx))voiceDrillNavTo(which,idx);
 });
 bindPresetTabs();
 bindBrandTrendPresetTabs();
